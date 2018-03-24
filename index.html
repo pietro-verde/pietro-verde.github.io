@@ -56,6 +56,94 @@ Sea rationibus intellegam ut, qui vide inani partem et. Nec ne cibo probo percip
 </div>
 
 
+    <script>
+  (function (w, d) {
+    if (/index.html/.test(w.location.href)) {
+      w.location.href = w.location.href.replace('index.html', '');
+    }
+
+    // Parse URL
+    var _query = {};
+    (function () {
+      var args = w.location.search.substr(1).split('&');
+      for (var i = 0, len = args.length, parts; i < len; i++) {
+        parts = args[i].split('=');
+        _query[parts[0]] = parts[1];
+      }
+    })();
+    params = _query;
+
+    if ('serviceWorker' in w.navigator) {
+
+      var name = null,
+          parsedReferrer = null,
+          referrerMatch = null;
+
+      parsedReferrer = d.createElement('a')
+      parsedReferrer.href = d.referrer;
+      referrerMatch = parsedReferrer.hostname.match(/^(\w+)\.sandbox\.teads\.net$/)
+      if (referrerMatch) {
+        name = referrerMatch[1];
+      }
+
+      var data = {
+        pageId: params['pageId'],
+        insertionId: params['insertionId'],
+        formatName: params['formatName'],
+        formatType: params['formatType'],
+        sandboxName: name
+      };
+
+      // keep registration to use SW when active
+      var registration = null;
+      var hasConfirmedRegistration = false;
+
+      function confirmActivity (reg) {
+        if (!hasConfirmedRegistration) {
+          reg.active.postMessage(data);
+          hasConfirmedRegistration = true;
+        }
+      };
+
+      w.navigator.serviceWorker
+        .register('service-worker.js')
+        .then(function (reg) {
+          registration = reg;
+          if(registration.installing) {
+            w.console.log('>> Service worker installing');
+          } else if(registration.waiting) {
+            w.console.log('>> Service worker installed');
+          } else if(registration.active) {
+            w.console.log('>> Service worker active');
+            confirmActivity(registration);
+          }
+        })
+        .catch(function (error) {
+          w.console.log('>> Service Worker KO', error);
+        });
+
+      w.navigator.serviceWorker.addEventListener('message', function (event) {
+        w.console.log("message:", event.data);
+
+        if (event.data.type == 'active') {
+          confirmActivity(registration);
+        } else if (event.data.type == 'insertTag') {
+          var script = d.createElement('script');
+          script.src = '//a.teads.tv/page/' + event.data.pageId + '/tag';
+          d.body.appendChild(script);
+        }
+      });
+
+    } else {
+
+      var h1 = d.getElementById('no-sw');
+      h1.innerHTML = 'Error: service workers not supported. Please use a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers#Browser_compatibility">compatible browser</a>.';
+      h1.style.display = 'block';
+
+    }
+  })(window, window.document);
+  </script>
+
   <p>
 Diceret eripuit reformidans in nec. Et latine voluptaria sit, ut vis inani incorrupte dissentiet! Ad vis bonorum invidunt antiopam, usu iusto vocent ut! Ea vel iriure epicurei posidonium, cum duis vocent interesset ne, te qui postulant dignissim expetendis? His ei mazim omittam intellegam, natum erant cetero id sea.
   </p>
