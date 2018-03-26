@@ -1,163 +1,134 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport"/>
+<title>cinemas - Google Fusion Tables</title>
+<style type="text/css">
+  html, body, #googft-mapCanvas {
+    height: 300px;
+    margin: 0;
+    padding: 0;
+    width: 500px;
+  }
+</style>
 
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<!-- You may use a different charset if needed -->
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?v=3&amp;libraries=visualization"></script>
 
-<title>Latin Lipsum -  Courtesy generator.lorem-ipsum.info</title>
+<script type="text/javascript">
+  if (window.location.protocol == "file:") {
+    alert('This script only works when loaded from a web server,' +
+        ' not from a file on your computer.');
+  }
+  function ftOnLoadClientApi() {
+  }
+</script>
+<script type="text/javascript" src="https://apis.google.com/js/client.js?onload=ftOnLoadClientApi">
+</script>
+
+<script type="text/javascript">
+  var map;
+
+  function loadApi() {
+    gapi.client.load('fusiontables', 'v1', initialize);
+  }
+
+  function initialize() {
+    var isMobile = (navigator.userAgent.toLowerCase().indexOf('android') > -1) ||
+      (navigator.userAgent.match(/(iPod|iPhone|iPad|BlackBerry|Windows Phone|iemobile)/));
+    if (isMobile) {
+      var viewport = document.querySelector("meta[name=viewport]");
+      viewport.setAttribute('content', 'initial-scale=1.0, user-scalable=no');
+    }
+    var mapDiv = document.getElementById('googft-mapCanvas');
+    mapDiv.style.width = isMobile ? '100%' : '500px';
+    mapDiv.style.height = isMobile ? '100%' : '300px';
+    map = new google.maps.Map(mapDiv, {
+      center: new google.maps.LatLng(52.38378731647642, -0.35979441562494685),
+      zoom: 7,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+    var query = 'select col1 from 1KupExnsr97c1v3PGBuK48R7wec3aIV2EWRMxbSOl limit 1000';
+    var request = gapi.client.fusiontables.query.sqlGet({ sql: query });
+    request.execute(function(response) {
+      onDataFetched(response);
+    });
+  }
+
+  function onDataFetched(response) {
+    if (response.error) {
+      alert('Unable to fetch data. ' + response.error.message +
+          ' (' + response.error.code + ')');
+    } else {
+      drawHeatmap(extractLocations(response.rows));
+    }
+  }
+
+  function extractLocations(rows) {
+    // Patterns for latitude/longitude in a single field, separated by a space
+    // or comma, with optional north/south/east/west orientation
+    var numberPattern = '([+-]?\\d+(?:\\.\\d*)?)';
+    var latPattern = numberPattern + '\\s*([NS])?';
+    var lngPattern = numberPattern + '\\s*([EW])?';
+    var latLngPattern = latPattern + '(?:\\s+|\\s*,\\s*)' + lngPattern;
+    var northRegexp = /N/i;
+    var eastRegexp = /E/i;
+    var parseRegexp = new RegExp(latLngPattern, 'i');
+    var locations = [];
+    for (var i = 0; i < rows.length; ++i) {
+      var row = rows[i];
+      if (row[0]) {
+        var parts = row[0].match(parseRegexp);
+        if (parts) {
+          var latString = parts[1];
+          var latOrientation = parts[2];
+          var lngString = parts[3];
+          var lngOrientation = parts[4];
+          var lat = parseFloat(latString);
+          var lng = parseFloat(lngString);
+          if (latOrientation) {
+            var latAdjust = northRegexp.test(latOrientation) ? 1 : -1;
+            lat = latAdjust * Math.abs(lat);
+          }
+          if (lngOrientation) {
+            var lngAdjust = eastRegexp.test(lngOrientation) ? 1 : -1;
+            lng = lngAdjust * Math.abs(lng);
+          }
+          var latLng = new google.maps.LatLng(lat, lng);
+          locations.push(latLng);
+        }
+      }
+    }
+    return locations;
+  }
+
+  function drawHeatmap(locations) {
+    var heatmap = new google.maps.visualization.HeatmapLayer({
+       dissipating: true,
+       gradient: [
+         'rgba(102,255,0,0)', 
+         'rgba(147,255,0,1)', 
+         'rgba(193,255,0,1)', 
+         'rgba(238,255,0,1)', 
+         'rgba(244,227,0,1)', 
+         'rgba(244,227,0,1)', 
+         'rgba(249,198,0,1)', 
+         'rgba(255,170,0,1)', 
+         'rgba(255,113,0,1)', 
+         'rgba(255,57,0,1)', 
+         'rgba(255,0,0,1)'
+       ],
+       opacity: 0.6,
+       radius: 13,
+       data: locations
+    });
+    heatmap.setMap(map);
+  }
+
+  google.maps.event.addDomListener(window, 'load', loadApi);
+</script>
 </head>
 
 <body>
-<p>Lorem ipsum dolor sit amet, melius legendos laboramus an his, an option laboramus qui. Et eam natum argumentum. Sale assentior id ius, meis accumsan lucilius in mel, sit labore detracto noluisse an? Omnis error his te. In augue bonorum omittam cum.
-  </p>
-  <p>
-Pri id recusabo volutpat, ceteros voluptatibus ei per! Veritus dolorem ne his, omnium equidem at pri. Appetere expetenda consectetuer te nec! Qui ut eius latine petentium, quo ut tempor regione. Case perfecto sea ea, id vis novum laudem incorrupte, eos id tempor tacimates. Cu numquam intellegat sit, impedit platonem tractatos no eam, tation ocurreret intellegam ut usu. Erant graeci instructior sea te, porro expetendis vis te, quo mazim aliquip facilisis cu.
-  </p>
-  <p>
-Nam autem placerat id, ex cum ignota fastidii reformidans. Latine percipit argumentum mea in, usu labore timeam et, ad vim labores sententiae concludaturque! Meis everti platonem pri eu, ceteros consulatu ea sea. Nam modo graeco inimicus et, velit timeam pri at! Sea denique hendrerit liberavisse id. Vis ex quis quot illum!
-  </p>
-
-
-
-  <p>
-Legendos percipitur delicatissimi eu eos, tale sapientem his ad. Duo ne invidunt apeirian reformidans, at nibh senserit eos. Ea has luptatum suscipiantur. Cu tale veniam minimum has, vis te noster adversarium. Vitae blandit ut est, at nam cibo prompta.
-  </p>
-  <p>
-Cum singulis forensibus te, verear corrumpit honestatis at est, agam brute deserunt cu quo. Nam eu dico accusata, prima deserunt aliquando ex eam. Duo erant tation utroque id, sententiae contentiones mei ex, eu patrioque intellegam pro. Quo te ferri veritus, te nam nonumy putant, ad usu quem unum summo?
-  </p>
-  <p>
-Sea rationibus intellegam ut, qui vide inani partem et. Nec ne cibo probo percipit, at esse noster mea? Pro paulo scripserit id, ne augue comprehensam eum, tempor facilisi reprehendunt no pri. Quem audiam hendrerit eum id. Malis scriptorem in sit, eos alienum delectus assueverit eu. Ea vix accumsan mediocritatem?
-  </p>
-
-<div class="celtra-ad-v3">
-    <!-- externalCreativeId = raw {CREATIVE_ID} -->
-    <!-- externalSiteId     = raw {SUPPLY_ID} -->
-    <!-- externalSiteName   = raw {SUPPLY_DOMAIN} -->
-    <!-- gpsLat             = raw {LAT} -->
-    <!-- gpsLng             = raw {LON} -->
-    <img src="data:image/png,celtra" style="display: none" onerror="
-        (function(img) {
-            var params = {'clickUrl':'{{>clickUrl}}','expandDirection':'undefined','preferredClickThroughWindow':'new','textColor':'#FFFFFF','barColor':'#000000','advertisementMessage':'Advertisement','scrollMessage':'Scroll to continue with content','useFullWidth':'1','clickEvent':'advertiser','iosAdvId':'{IDFA}','androidAdvId':'{IDFA}','externalAdServer':'Adotmob','tagVersion':'6'};
-            [].slice.apply(img.parentNode.childNodes).forEach(function(n) { var decfs = { urldecode: decodeURIComponent, htmldecode: function(v) { var d = document.createElement('div'); d.innerHTML = v; return d.textContent; }, eval: function(v) { return eval(v); }, raw: function(v) { return v; } }; var m; if (n.nodeType == 8 &amp;&amp; (m = n.textContent.match(/^&#92;s+([&#92;w.]+)(&#92;[.+&#92;])?&#92;s+=&#92;s+(&#92;w+)&#92;s+(.*)$/i))) { try { params[m[1]+(m[2] || '')] = decfs[m[3]](m[4].replace(/^&#92;s+|&#92;s+$/g, '')); } catch (e) {} } });
-            var req = document.createElement('script');
-            req.id = params.scriptId = 'celtra-script-' + (window.celtraScriptIndex = (window.celtraScriptIndex||0)+1);
-            params.clientTimestamp = new Date/1000;
-            params.clientTimeZoneOffsetInMinutes = new Date().getTimezoneOffset();
-            params.hostPageLoadId=window.celtraHostPageLoadId=window.celtraHostPageLoadId||(Math.random()+'').slice(2);
-            var src = 'https://ads.celtra.com/3c7bc693/web.js?';
-            for (var k in params) {
-                src += '&amp;' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
-            }
-            req.src = src;
-            img.parentNode.insertBefore(req, img.nextSibling);
-        })(this);
-    "/>
-</div>
-
-
-    <script>
-  (function (w, d) {
-    if (/index.html/.test(w.location.href)) {
-      w.location.href = w.location.href.replace('index.html', '');
-    }
-
-    // Parse URL
-    var _query = {};
-    (function () {
-      var args = w.location.search.substr(1).split('&');
-      for (var i = 0, len = args.length, parts; i < len; i++) {
-        parts = args[i].split('=');
-        _query[parts[0]] = parts[1];
-      }
-    })();
-    params = _query;
-
-    if ('serviceWorker' in w.navigator) {
-
-      var name = null,
-          parsedReferrer = null,
-          referrerMatch = null;
-
-      parsedReferrer = d.createElement('a')
-      parsedReferrer.href = d.referrer;
-      referrerMatch = parsedReferrer.hostname.match(/^(\w+)\.sandbox\.teads\.net$/)
-      if (referrerMatch) {
-        name = referrerMatch[1];
-      }
-
-      var data = {
-        pageId: params['pageId'],
-        insertionId: params['insertionId'],
-        formatName: params['formatName'],
-        formatType: params['formatType'],
-        sandboxName: name
-      };
-
-      // keep registration to use SW when active
-      var registration = null;
-      var hasConfirmedRegistration = false;
-
-      function confirmActivity (reg) {
-        if (!hasConfirmedRegistration) {
-          reg.active.postMessage(data);
-          hasConfirmedRegistration = true;
-        }
-      };
-
-      w.navigator.serviceWorker
-        .register('service-worker.js')
-        .then(function (reg) {
-          registration = reg;
-          if(registration.installing) {
-            w.console.log('>> Service worker installing');
-          } else if(registration.waiting) {
-            w.console.log('>> Service worker installed');
-          } else if(registration.active) {
-            w.console.log('>> Service worker active');
-            confirmActivity(registration);
-          }
-        })
-        .catch(function (error) {
-          w.console.log('>> Service Worker KO', error);
-        });
-
-      w.navigator.serviceWorker.addEventListener('message', function (event) {
-        w.console.log("message:", event.data);
-
-        if (event.data.type == 'active') {
-          confirmActivity(registration);
-        } else if (event.data.type == 'insertTag') {
-          var script = d.createElement('script');
-          script.src = '//a.teads.tv/page/' + event.data.pageId + '/tag';
-          d.body.appendChild(script);
-        }
-      });
-
-    } else {
-
-      var h1 = d.getElementById('no-sw');
-      h1.innerHTML = 'Error: service workers not supported. Please use a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers#Browser_compatibility">compatible browser</a>.';
-      h1.style.display = 'block';
-
-    }
-  })(window, window.document);
-  </script>
-
-  <p>
-Diceret eripuit reformidans in nec. Et latine voluptaria sit, ut vis inani incorrupte dissentiet! Ad vis bonorum invidunt antiopam, usu iusto vocent ut! Ea vel iriure epicurei posidonium, cum duis vocent interesset ne, te qui postulant dignissim expetendis? His ei mazim omittam intellegam, natum erant cetero id sea.
-  </p>
-  <p>
-Vis denique consulatu inciderint ei? At porro saepe postea vix, duo malis docendi cu, ad mel vero impetus assentior. Sit te solum voluptatum philosophia, duo delicata partiendo an. Te eos viris veritus deleniti, affert munere id vel.
-  </p>
-  <p>
-Tantas soleat mnesarchum pri cu, nam quis meis at, eum mutat gubergren no. Mel ea congue epicuri necessitatibus, et ornatus facilis suscipit nec, no pri putent iudicabit accommodare? Dicam primis ridens quo cu, has in quot oportere senserit, congue admodum signiferumque an usu. Case oportere duo eu? At saepe indoctum recteque sit, sit vide menandri principes ne, ea vix quando omnium?
-  </p>
-  <p>
-Novum disputando consectetuer in per? Ubique adolescens pri id. Has ei nulla scripserit? Ex ius noluisse forensibus, tritani contentiones ei qui?
-  </p>
-  <p>
-His percipit efficiantur te. Vel id vidit verear vituperatoribus, vocent dignissim te eam? Quo an vidit aeque, vim no ferri molestiae cotidieque, perfecto salutatus aliquando eum eu. Odio dicit meliore sit in, no eos quando regione fuisset. Ius an quot commodo officiis, te debitis intellegat quaerendum mei. Ea vivendo liberavisse vim, et case nullam cum.
-</p>
+  <div id="googft-mapCanvas"></div>
 </body>
 </html>
